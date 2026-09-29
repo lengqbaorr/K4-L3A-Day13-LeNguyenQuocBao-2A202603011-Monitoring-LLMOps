@@ -73,13 +73,17 @@ def main() -> int:
         client.update_prompt(name=PROMPT_NAME, version=1, new_labels=["baseline", "production"])
         print(f"Rolled back: label 'production' -> {PROMPT_NAME} v1")
     elif args.action == "status":
-        for version in (1, 2):
+        version = 1
+        while version <= 50:
             try:
                 prompt = client.get_prompt(PROMPT_NAME, version=version, type="text")
-                labels = sorted(getattr(prompt, "labels", []) or [])
-                print(f"v{version}: labels={labels}")
-            except Exception as exc:  # pragma: no cover - phụ thuộc project Langfuse
-                print(f"v{version}: unavailable ({type(exc).__name__})")
+            except Exception:
+                break
+            if prompt is None:
+                break
+            labels = sorted(getattr(prompt, "labels", []) or [])
+            print(f"v{version}: labels={labels}")
+            version += 1
 
     client.flush()
     return 0
