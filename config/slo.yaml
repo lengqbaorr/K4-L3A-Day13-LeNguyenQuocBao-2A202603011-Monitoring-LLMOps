@@ -1,3 +1,13 @@
+# SLO — Day 13 Monitoring & LLMOps (K4-L3A)
+#
+# Baseline đo được từ data/logs.jsonl trước khi chỉnh code (25 request, load test
+# mặc định + concurrency 5):
+#   latency p50 = 396 ms | p95 = 1155 ms | p99 = 1218 ms | TTFT p95 = 50 ms
+#   error rate = 0% | retrieval success = 100% | quality mean = 0.88
+#   tổng cost = 0.0506 USD / 25 request (≈ 0.002 USD/request)
+#
+# Ngưỡng 3000 ms lấy từ contract dashboard (panel latency) và rộng hơn ~2.6 lần
+# so với p95 thực tế, đủ chỗ để tail latency tăng mà chưa cần đổi SLO ngay.
 service: day13-l3a-monitoring-llmops-lab
 primary_slo:
   name: fast_successful_requests
@@ -7,9 +17,23 @@ primary_slo:
     total_event: 'event == "request_received"'
   target_percent: 99.5
   error_budget_percent: 0.5
-  note: Học viên phải giải thích hoặc điều chỉnh ngưỡng bằng baseline của mình.
+  note: >-
+    Target 99.5% nghĩa là tối đa 0.5% số request trong 28 ngày được phép vượt
+    3000 ms hoặc không trả về response. Về mặt thời gian 0.5% của 28 ngày là
+    201.6 phút "bad time"; về mặt request, nếu service nhận 100.000 request/28d
+    thì chỉ được phép có 500 request chậm hơn 3000 ms. Baseline p95 = 1155 ms
+    nên budget hiện đang còn nguyên; mỗi lần load test chạy concurrency 5 làm
+    client-side latency chạm ~4200 ms là cảnh báo sớm về việc event loop bị
+    block, không phải là budget burn thật (SLI đo theo latency_ms của
+    response_sent). Giữ nguyên target thay vì nới ngưỡng vì p95 nền vẫn dưới
+    ngưỡng 3000 ms của contract.
 guardrails:
   error_rate_pct_max: 2
   daily_cost_usd_max: 2.5
   quality_score_avg_min: 0.75
   retrieval_success_rate_pct_min: 90
+  # Guardrail map 1-1 với 3 alert trong config/alert_rules.yaml:
+  #   error_rate_pct_max          -> alert-2 error-rate-high
+  #   (latency p95 <= 3000 ms)    -> alert-1 latency-high
+  #   retrieval_success_rate_min  -> alert-3 retrieval-degraded
+  #   daily_cost_usd_max          -> theo dõi bằng panel Cost trên dashboard

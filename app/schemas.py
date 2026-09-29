@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Literal
-
 from pydantic import BaseModel, Field
 
 
@@ -22,25 +19,3 @@ class ChatResponse(BaseModel):
     tokens_out: int
     cost_usd: float
     quality_score: float
-
-
-class LogRecord(BaseModel):
-    ts: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    level: Literal["info", "warning", "error", "critical"]
-    service: str
-    event: str
-    correlation_id: str
-    env: str
-    user_id_hash: str | None = None
-    session_id: str | None = None
-    feature: str | None = None
-    model: str | None = None
-    latency_ms: int | None = None
-    ttft_ms: int | None = None
-    tokens_in: int | None = None
-    tokens_out: int | None = None
-    cost_usd: float | None = None
-    error_type: str | None = None
-    tool_name: str | None = None
-    tool_success: bool | None = None
-    payload: dict[str, Any] | None = None

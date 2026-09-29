@@ -1,25 +1,31 @@
 alerts:
-  - name: TODO_alert_1
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: latency-high
+    severity: warning
+    condition: 'p95(response_sent.latency_ms) > 3000 for 5m'
+    duration: 5m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: "#day13-oncall"
+    owner: llmops-oncall
+    slo: fast_successful_requests
     runbook: docs/alerts.md#alert-1
-  - name: TODO_alert_2
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: error-rate-high
+    severity: critical
+    condition: 'rate(request_failed) / rate(request_received) * 100 > 2 for 5m'
+    duration: 5m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: "#day13-oncall"
+    owner: api-oncall
+    slo: fast_successful_requests
     runbook: docs/alerts.md#alert-2
-  - name: TODO_alert_3
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: retrieval-degraded
+    severity: warning
+    condition: 'sum(tool_success == true) / count(tool_success != null) * 100 < 90 for 10m'
+    duration: 10m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: "#day13-oncall"
+    owner: rag-oncall
+    slo: retrieval_success_rate_pct_min
     runbook: docs/alerts.md#alert-3
